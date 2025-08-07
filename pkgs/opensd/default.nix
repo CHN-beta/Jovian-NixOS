@@ -1,21 +1,23 @@
-{ stdenv
-, lib
-, fetchFromGitLab
-, cmake
+{
+  stdenv,
+  lib,
+  fetchFromGitea,
+  cmake,
 }:
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "opensd";
-  version = "unstable-2022-12-19";
+  version = "0.52";
 
-  src = fetchFromGitLab {
-    owner = "open-sd";
+  src = fetchFromGitea {
+    domain = "codeberg.org";
+    owner = "OpenSD";
     repo = "opensd";
-    rev = "80dad94ada2d238018e88b442244494e57c98415";
-    sha256 = "sha256-ilgy4M8sWV4JvfldXO42zik6McGv3E7ztBd9u+mTkFY=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-7DbDkqhNq4Io26XYhwr/5eLdF3TkZyKKHiNgmT5yaWE=";
   };
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [];
+  buildInputs = [ ];
 
   cmakeFlags = [
     "-DUDEV_RULE_DIR=${placeholder "out"}/lib/udev/rules.d"
@@ -26,4 +28,4 @@ stdenv.mkDerivation {
     description = "Userspace driver for Steam Deck input";
     license = lib.licenses.gpl3Plus;
   };
-}
+})

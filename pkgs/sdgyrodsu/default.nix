@@ -1,19 +1,34 @@
-{ lib, stdenv, fetchFromGitHub, ncurses, hidapi, systemd }:
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  ncurses,
+  hidapi,
+  systemd,
+}:
 
-stdenv.mkDerivation(finalAttrs: {
+stdenv.mkDerivation (finalAttrs: {
   pname = "sdgyrodsu";
-  version = "2.1";
+  version = "2.1.1";
 
   src = fetchFromGitHub {
     owner = "kmicki";
     repo = "SteamDeckGyroDSU";
-    rev = "v${finalAttrs.version}";
-    sha256 = "sha256-2OLdcRauBBjsS88nlCidnTdVzuh2KBLOOC7fsn1BFnc=";
+    tag = "v${finalAttrs.version}";
+    sha256 = "sha256-24ZnX9n4vIMFwNWbQOT7aLvlX7uiTzMVRHfuaTkwg6M=";
   };
 
-  buildInputs = [ ncurses hidapi systemd ];
+  buildInputs = [
+    ncurses
+    hidapi
+    systemd
+  ];
 
-  makeFlags = [ "NOPREPARE=1" "CHECKDEPS=" "release" ];
+  makeFlags = [
+    "NOPREPARE=1"
+    "CHECKDEPS="
+    "release"
+  ];
 
   installPhase = ''
     runHook preInstall

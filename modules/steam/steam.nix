@@ -8,13 +8,6 @@ let
   ;
 
   cfg = config.jovian.steam;
-  gamescope-session = pkgs.gamescope-session.override {
-    steamPackages = pkgs.steamPackages.overrideScope (_: scopeSuper: {
-      steam-fhsenv = scopeSuper.steam-fhsenv.override (prev: {
-        extraPkgs = pkgs: config.programs.steam.fontPackages ++ lib.optionals (prev ? extraPkgs) (pkgs: [ pkgs ]);
-      });
-    });
-  };
 in
 {
   config = mkIf cfg.enable (mkMerge [
@@ -53,12 +46,15 @@ in
         extraPackages32 = [ pkgs.pkgsi686Linux.gamescope-wsi ];
       };
 
-      hardware.pulseaudio.support32Bit = true;
+      services.pulseaudio.support32Bit = true;
       hardware.steam-hardware.enable = mkDefault true;
 
-      environment.systemPackages = [ gamescope-session pkgs.steamos-polkit-helpers pkgs.steamos-manager ];
+      environment.systemPackages = [ pkgs.gamescope pkgs.gamescope-session pkgs.steamos-polkit-helpers pkgs.steamos-manager ];
 
-      systemd.packages = [ gamescope-session pkgs.steamos-manager ];
+      systemd.packages = [ pkgs.gamescope-session pkgs.powerbuttond pkgs.steamos-manager ];
+
+      # Required by steamos-manager
+      services.inputplumber.enable = true;
 
       # Vendor patch: https://raw.githubusercontent.com/Jovian-Experiments/PKGBUILDs-mirror/cdaeca26642d59fc9109e98ac9ce2efe5261df1b/0001-Add-systemd-service.patch
       systemd.user.services.wakehook = {
@@ -75,9 +71,27 @@ in
         wantedBy = [ "gamescope-session.service" ];
       };
 
+      systemd.user.services.steamos-powerbuttond = {
+        overrideStrategy = "asDropin";
+        wantedBy = [ "gamescope-session.service" ];
+      };
+
+      systemd.services.steamos-manager = {
+        overrideStrategy = "asDropin";
+        # FIXME: should probably be done upstream
+        after = [ "inputplumber.service" ];
+        path = [
+          # .../lib/hwsupport/format-device.sh makes an unqualified `umount` call.
+          "/run/wrappers/"
+        ];
+
+        # https://gitlab.steamos.cloud/holo/steamos-manager/-/issues/1
+        wantedBy = [ "multi-user.target" ];
+      };
+
       services.dbus.packages = [ pkgs.steamos-manager ];
 
-      services.displayManager.sessionPackages = [ gamescope-session ];
+      services.displayManager.sessionPackages = [ pkgs.gamescope-session ];
 
       # Conflicts with powerbuttond
       services.logind.extraConfig = ''
@@ -87,6 +101,19 @@ in
       services.udev.packages = [
         pkgs.powerbuttond
       ];
+
+      # From steam-jupiter
+      # FIXME: investigate LED stuff
+      services.udev.extraRules = ''
+        # USB devices and topological children
+        SUBSYSTEMS=="usb", TAG+="uaccess"
+
+        # HID devices over hidraw
+        KERNEL=="hidraw*", TAG+="uaccess"
+
+        # Steam Controller udev write access
+        KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+      '';
 
       # This rule allows the user to configure Wi-Fi in Deck UI.
       #
@@ -111,7 +138,7 @@ in
         # We don't support adopting a drive, yet.
         STEAM_ALLOW_DRIVE_ADOPT = mkDefault "0";
         # Ejecting doesn't work, either.
-        STEAM_ALLOW_DRIVE_UNMOUNT = mkDefault "0";
+        STEAM_ALLOW_DRIVE_UNMOUNT = mkDefault "1";
       };
     }
   ]);

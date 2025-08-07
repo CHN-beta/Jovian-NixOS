@@ -35,9 +35,10 @@ let
       wirelesstools
     ];
     execer = [
-      "cannot:${jovian-stubs}/bin/jupiter-biosupdate"
+      "cannot:${dmidecode}/bin/dmidecode"
       "cannot:${jovian-stubs}/bin/steamos-reboot"
       "cannot:${jovian-stubs}/bin/steamos-factory-reset-config"
+      "cannot:${jovian-stubs}/bin/steamos-firmware-update"
       "cannot:${jovian-stubs}/bin/steamos-select-branch"
       "cannot:${jovian-stubs}/bin/steamos-update"
       "cannot:${jupiter-dock-updater-bin}/lib/jupiter-dock-updater/jupiter-dock-updater.sh"
@@ -58,6 +59,7 @@ let
       "/usr/bin/jupiter-biosupdate" = true;
       "/usr/bin/jupiter-check-support" = true;
       "/usr/bin/steamos-factory-reset-config" = true;
+      "/usr/bin/steamos-firmware-update" = true;
       "/usr/bin/steamos-reboot" = true;
       "/usr/bin/steamos-select-branch" = true;
       "/usr/bin/steamos-update" = true;
@@ -80,7 +82,7 @@ in stdenv.mkDerivation {
   patchPhase = ''
     runHook prePatch
   
-    substituteInPlace usr/share/polkit-1/actions/org.valve.steamos.policy --replace /usr $out
+    substituteInPlace usr/share/polkit-1/actions/org.valve.steamos.policy --replace-fail /usr $out
 
     runHook postPatch
   '';

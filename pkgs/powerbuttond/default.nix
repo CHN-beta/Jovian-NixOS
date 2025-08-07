@@ -2,37 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  substituteAll,
+  replaceVars,
   pkg-config,
   libevdev,
+  udev,
   jovian-steam-protocol-handler,
 }:
-stdenv.mkDerivation {
+stdenv.mkDerivation(finalAttrs: {
   pname = "powerbuttond";
-  version = "2.0";
+  version = "3.2";
 
   src = fetchFromGitHub {
     owner = "Jovian-Experiments";
     repo = "powerbuttond";
-    rev = "ef6d214295a38f186bba9a80cc6f48c055700e3a"; # jovian/multi
-    hash = "sha256-SD8NpiBIIvI59/HtV19lsJ8/SdBOoyO2rH1OVmDX5Q8=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-BP5ZzoZmJbmeTkl44cg+/nLeLVicj+RhFGS56PDx5Xo=";
   };
 
   patches = [
-    (substituteAll {
+    (replaceVars ./jovian.patch {
       handler = jovian-steam-protocol-handler;
-      src = ./jovian.patch;
     })
   ];
 
   postPatch = ''
     substituteInPlace Makefile \
-      --replace '/usr/lib/hwsupport/powerbuttond' '/usr/bin/powerbuttond' \
-      --replace '/usr/' '/'
+      --replace-fail /usr/lib/hwsupport/steamos-powerbuttond /usr/bin/steamos-powerbuttond \
+      --replace-fail /usr/ /
+
+    substituteInPlace steamos-powerbuttond.service \
+      --replace-fail /usr/lib/hwsupport/steamos-powerbuttond $out/bin/steamos-powerbuttond
   '';
 
   nativeBuildInputs = [pkg-config];
-  buildInputs = [libevdev];
+  buildInputs = [libevdev udev];
 
   makeFlags = [
     "DESTDIR=$(out)"
@@ -42,4 +45,4 @@ stdenv.mkDerivation {
     description = "Steam Deck power button daemon";
     license = licenses.bsd2;
   };
-}
+})

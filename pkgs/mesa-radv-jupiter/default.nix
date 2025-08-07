@@ -1,7 +1,7 @@
 { stdenv, mesa, fetchFromGitHub }:
 let
-  version = "24.1.0";
-  jupiterVersion = "steamos-24.4.0";
+  version = "24.3.0";
+  jupiterVersion = "steamos-24.11.10";
 in stdenv.mkDerivation {
   pname = "mesa";
   version = "${version}.${jupiterVersion}";
@@ -10,7 +10,7 @@ in stdenv.mkDerivation {
     owner = "Jovian-Experiments";
     repo = "mesa";
     rev = jupiterVersion;
-    hash = "sha256-fWtEH8Ln1QZKMa7Y8sLexWyQYhNIuMhIUQPy198Oopg=";
+    hash = "sha256-WYjMLLRzZ8j70hBUlP/i2pvkwN+Wuz+346K0/t2GZ/c=";
   };
 
   inherit (mesa) buildInputs nativeBuildInputs propagatedBuildInputs;
@@ -31,7 +31,6 @@ in stdenv.mkDerivation {
     "-D android-libbacktrace=disabled"
     "-D vulkan-drivers=amd"
     "-D vulkan-layers="
-    "-D dri3=enabled"
     "-D egl=disabled"
     "-D gbm=disabled"
     "-D gles1=disabled"
@@ -43,8 +42,10 @@ in stdenv.mkDerivation {
     "-D lmsensors=disabled"
     "-D osmesa=false"
     "-D microsoft-clc=disabled"
+    "-D video-codecs=vc1dec,h264dec,h264enc,h265dec,h265enc"
     "-D valgrind=enabled"
     "-D intel-rt=disabled"
-    "-D radv-build-id=64474a6475eb8af2b44ef334793fd58ad89875f6"
+    "-D radv-build-id=9945cd2ca30523adc39089f95892da7b49f138a0"
+    "-D gpuvis=true"
   ];
 }

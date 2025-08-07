@@ -1,31 +1,36 @@
 { 
   stdenv, 
   fetchFromGitHub, 
-  substituteAll, 
+  replaceVars, 
   jovian-steam-protocol-handler, 
   systemd,
 }:
 
 stdenv.mkDerivation rec {
   pname = "jupiter-hw-support-source";
-  version = "20240624.1";
+  version = "20250708.1";
 
   src = fetchFromGitHub {
     owner = "Jovian-Experiments";
     repo = "jupiter-hw-support";
     rev = "jupiter-${version}";
-    hash = "sha256-G0N1iWquhj93x9QCy8U68TM380FWPc6uJZtrExdBQaY=";
+    hash = "sha256-9UL1UyiDpQ9DpPwgmIR+qyP0ebbDHwb7GFg+z4qhIzo=";
   };
 
   patches = [
-    (substituteAll {
+    (replaceVars ./automount-fix-system-paths.patch {
       handler = jovian-steam-protocol-handler;
       systemd = systemd;
-      src = ./jovian.patch;
     })
-    # Fix controller updates with python-hid >= 1.0.6
-    ./hid-1.0.6.patch
+    # Remove `deck` username assumption
+    ./0001-Jovian-Ensure-automounting-works-for-any-UID-1000-us.patch
+    # Minor fixes against silly environments
+    ./0001-steamos-automount-Harden-against-missing-run-media.patch
+    ./0001-format-device-Harden-against-mountpoint-being-listed.patch
   ];
+
+  # broken symlinks will be filled in later
+  dontCheckForBrokenSymlinks = true;
 
   installPhase = ''
     cp -r . $out

@@ -67,13 +67,13 @@ def get_latest_versions(repos: list[str]):
     return result
 
 
-def get_local_version(package: str):
+def get_local_version(package: str, attr: str):
     return subprocess.check_output(
         [
             "nix", "eval", 
             f".#{package}", 
             "--apply",
-            'p: if p ? pkgrel then "${p.version}-${toString p.pkgrel}" else p.version',
+            f'p: p.{attr}',
             "--raw",
             "--option", "warn-dirty", "false"
         ],
@@ -128,9 +128,10 @@ def main():
 
             pkgrel = action.get('pkgrel')
             fixup = action.get('fixup')
+            attr = action.get('attr', 'version')
 
             for local_package in local_packages:
-                local_version = get_local_version(local_package)
+                local_version = get_local_version(local_package, attr)
                 if pkgrel:
                     local_version += f'-{pkgrel}'
                 if fixup:
