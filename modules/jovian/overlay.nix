@@ -13,13 +13,6 @@ in
             Whether to enable the Jovian NixOS overlay.
           '';
         };
-        allowUnsupportedNixpkgs = lib.mkOption {
-          default = false;
-          type = lib.types.bool;
-          description = ''
-            Whether to allow using Jovian NixOS with unsupported Nixpkgs versions.
-          '';
-        };
       };
     };
   };
@@ -29,7 +22,7 @@ in
       (import ../../overlay.nix)
     ];
 
-    assertions = lib.mkIf (!cfg.allowUnsupportedNixpkgs) [
+    assertions = [
       {
         # Can't use 23.11 here because git versions are tracked as 23.11pre,
         # which is considered to be < 23.11.
